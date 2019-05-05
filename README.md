@@ -71,6 +71,7 @@ docker run -t -i -d \
 * `-e MOD_USERNAME` - The Reddit account name of the bot. **Required**
 * `-e MOD_PASSWORD` - The password to the Reddit account. **Required**
 * `-e WEBHOOK` - The URL for a Slack Incoming Webhook. **Required**
+* `-e CHANNEL` - The Slack Channel to send Submissions to - defaults to #submission_feed otherwise **Optional**
 
 **Note:** To run Modbot with multiple subreddits, you will need to spin up additional docker containers. 
 This can be simplified using a docker-compose file with each subreddit as it's own service with their own environment variables. See the example [docker-compose](docker-compose.yml.example) file.
