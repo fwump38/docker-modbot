@@ -1,0 +1,24 @@
+version: '2'
+services:
+  subreddit1:
+    image: fwump38/docker-modbot:1.0.0
+    environment:
+      CLIENT_ID: zzzzzzzz
+      CLIENT_SECRET: zzzzzzzz
+      SUBREDDIT: subreddit1
+      MOD_PASSWORD: zzzzzzzz
+      MOD_USERNAME: username
+      WEBHOOK: https://hooks.slack.com/services/ABCDEF/GHIJKL/MNOPQRS
+    stdin_open: true
+    tty: true
+  subreddit2:
+    image: fwump38/docker-modbot:1.0.0
+    environment:
+      CLIENT_ID: zzzzzzzz
+      CLIENT_SECRET: zzzzzzzz
+      SUBREDDIT: subreddit2
+      MOD_PASSWORD: zzzzzzzz
+      MOD_USERNAME: username
+      WEBHOOK: https://hooks.slack.com/services/ABCDEF/GHIJKL/MNOPQRS
+    stdin_open: true
+    tty: true
