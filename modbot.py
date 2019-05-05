@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 __author__ = "/u/fwump38"
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 
 def clean(obj):
@@ -532,6 +532,7 @@ class Bot(object):
 
     def fetch_reasons(self):
         self.logger.info("Loading reasons...")
+        self.reasons = {}  # Clear existing first
         reason_data = self.r.get(f"api/v1/{self.subreddit_str}/removal_reasons.json")
         data = reason_data["data"]
         for reason_id, values in data.items():
@@ -815,6 +816,6 @@ if __name__ == "__main__":
         password=os.getenv("MOD_PASSWORD"),
         username=os.getenv("MOD_USERNAME"),
         webhook=os.getenv("WEBHOOK"),
-        channel=os.getenv("CHANNEL", "#submission_feed"),
+        channel=os.getenv("CHANNEL", "#mod_feed"),
     )
     modbot.run()
