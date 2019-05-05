@@ -41,7 +41,7 @@ Requirements
 ------------
 
 You'll first want to create a new account and make it a mod of your subreddit.
-Required permissions are: access, flair, posts, mail, and wiki.
+Required permissions are: posts and mail
 
 Next you'll need to setup a Script app for your bot to access the Reddit API. See [Reddit Quick Start](https://github.com/reddit-archive/reddit/wiki/OAuth2-Quick-Start-Example#first-steps)
 
