@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 __author__ = "/u/fwump38"
-__version__ = "1.0.1"
+__version__ = "1.0.2"
 
 
 def clean(obj):
@@ -587,11 +587,13 @@ class Bot(object):
                     elif submission.user_reports:
                         logger.info(f"Processing user report {submission}")
                         if isinstance(submission, Submission):
+                            text = f"User reported submission: {submission.title}"
                             if submission.selftext:
                                 content = submission.selftext
                             else:
                                 content = None
                         if isinstance(submission, Comment):
+                            text = f"User reported comment from submission: {submission.title}"
                             content = submission.body
                         reason_str = "\n".join(
                             [
@@ -627,7 +629,7 @@ class Bot(object):
                         )
                         # Post to Slack
                         slack_msg = {
-                            "text": "User Report",
+                            "text": text,
                             "blocks": clean(blocks),
                             "channel": self.channel,
                         }
@@ -700,25 +702,39 @@ class Bot(object):
             if modmail.messages[-1].author.name in self.mods:
                 modmail.archive()  # Auto-archive mod messages (removal messages)
                 message = modmail.messages[0]
-                match = re.search(
+                re_link = re.search(
                     r"Original (post|comment): (.*)",
                     message.body_markdown,
                     re.IGNORECASE,
                 )
-                if match:
-                    removal_type = match.group(1).lower()
-                    permalink = match.group(2)
-                    # Post to Slack
+                re_reason = re.search(
+                    r"was removed because of: '(.*)'",
+                    message.body_markdown,
+                    re.IGNORECASE,
+                )
+                if all([re_link, re_reason]):
+                    removal_type = re_link.group(1).lower()
+                    permalink = re_link.group(2)
+                    reason = re_reason.group(1).lower()
+                    removed_url = f"https://www.reddit.com{permalink}"
+                    removed_post_obj = Submission(self.r, url=removed_url)
+                    removed_post = removed_post_obj._fetch()
+                    if removal_type == "comment":
+                        text = f"{message.author.name} removed {removal_type} from {removed_post.title} because of: {reason}"
+                    else:
+                        text = (
+                            f"{message.author.name} removed submission: {removed_post.title}",
+                        )
                     blocks = [
                         LayoutSection(
                             TextMarkdown(
-                                f":no_entry_sign: {message.author.name} removed {removal_type} <https://www.reddit.com{permalink}>"
+                                f":no_entry_sign: {message.author.name} removed {removal_type} <{removed_url}> because of: {reason}"
                             )
                         )
                     ]
                     # Post to Slack
                     slack_msg = {
-                        "text": "New Modmail",
+                        "text": text,
                         "blocks": clean(blocks),
                         "channel": self.channel,
                     }
@@ -739,12 +755,11 @@ class Bot(object):
                     self.modmail_queue_inprogress.append(modmail)
                     send_to_slack.append(modmail)
         for modmail in notifications:
+            modmail.archive()
             if modmail.messages[0].author.name == "AutoModerator":
                 if modmail not in self.modmail_queue_notifications:
                     self.modmail_queue_notifications.append(modmail)
                     send_to_slack.append(modmail)
-            else:
-                modmail.archive()  # Auto-archive other notifications
 
         for modmail in send_to_slack:
             messages = []
@@ -765,7 +780,7 @@ class Bot(object):
             ]
             # Post to Slack
             slack_msg = {
-                "text": "New Modmail",
+                "text": f"New Modmail: {modmail.subject}",
                 "blocks": clean(blocks),
                 "channel": self.channel,
             }
