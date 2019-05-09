@@ -22,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 __author__ = "/u/fwump38"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 
 
 def clean(obj):
@@ -717,8 +717,8 @@ class Bot(object):
                     permalink = re_link.group(2)
                     reason = re_reason.group(1).lower()
                     removed_url = f"https://www.reddit.com{permalink}"
-                    removed_post_obj = Submission(self.r, url=removed_url)
-                    removed_post = removed_post_obj._fetch()
+                    removed_post = Submission(self.r, url=removed_url)
+                    removed_post._fetch()
                     if removal_type == "comment":
                         text = f"{message.author.name} removed {removal_type} from {removed_post.title} because of: {reason}"
                     else:
