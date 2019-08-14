@@ -500,7 +500,15 @@ class ObjectOptionGroup(_Object):
 
 class Bot(object):
     def __init__(
-        self, subreddit, client_id, client_secret, username, password, webhook, channel
+        self,
+        subreddit,
+        client_id,
+        client_secret,
+        username,
+        password,
+        webhook,
+        webhook_beta,
+        channel,
     ):
         self.logger = logger
         self.logger.info(f"Logging into /u/{username} for /r/{subreddit}")
@@ -518,6 +526,7 @@ class Bot(object):
         self.subreddit_str = subreddit.lower()
         self.subreddit = self.r.subreddit(subreddit)
         self.webhook = webhook
+        self.webhook_beta = webhook_beta
         self.channel = channel
         self.mods = None
         self.reasons = {}
@@ -589,12 +598,12 @@ class Bot(object):
                         if isinstance(submission, Submission):
                             text = f"User reported submission: {submission.title}"
                             if submission.selftext:
-                                content = submission.selftext
+                                content = submission.selftext[:2900]
                             else:
                                 content = None
                         if isinstance(submission, Comment):
                             text = f"User reported comment from submission: {submission.title}"
-                            content = submission.body
+                            content = submission.body[:2900]
                         reason_str = "\n".join(
                             [
                                 f"{reason[1]}: {reason[0]}"
@@ -634,6 +643,12 @@ class Bot(object):
                             "channel": self.channel,
                         }
                         r = requests.post(self.webhook, json=slack_msg)
+                        # Send to beta channel
+                        permalink = f"https://www.reddit.com{submission.permalink}"
+                        r = requests.post(
+                            self.webhook_beta,
+                            json={"text": permalink, "unfurl_links": True},
+                        )
                         if r.ok:
                             self.logger.info("Sent Report to Slack!")
                         else:
@@ -739,6 +754,12 @@ class Bot(object):
                         "channel": self.channel,
                     }
                     r = requests.post(self.webhook, json=slack_msg)
+                    # Send to beta channel
+                    permalink = f"https://mod.reddit.com/mail/all/{message.id}"
+                    r = requests.post(
+                        self.webhook_beta,
+                        json={"text": permalink, "unfurl_links": True},
+                    )
                     if r.ok:
                         self.logger.info("Sent Report to Slack!")
                     else:
@@ -831,6 +852,7 @@ if __name__ == "__main__":
         password=os.getenv("MOD_PASSWORD"),
         username=os.getenv("MOD_USERNAME"),
         webhook=os.getenv("WEBHOOK"),
+        webhook_beta=os.getenv("WEBHOOK_BETA"),
         channel=os.getenv("CHANNEL", "#mod_feed"),
     )
     modbot.run()
